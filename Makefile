@@ -221,11 +221,25 @@ format:
 ###                                Localnet                                 ###
 ###############################################################################
 
+start-localnet:
+	rm -rf ~/.gaiad-liveness
+	gaiad init liveness --chain-id liveness --home ~/.gaiad-liveness
+	gaiad config chain-id liveness --home ~/.gaiad-liveness
+	gaiad config keyring-backend test --home ~/.gaiad-liveness
+	gaiad keys add val --home ~/.gaiad-liveness --keyring-backend test
+	gaiad add-genesis-account val 10000000000000000stake --home ~/.gaiad-liveness --keyring-backend test
+	gaiad gentx val 1000000000000stake --home ~/.gaiad-liveness --chain-id liveness
+	gaiad collect-gentxs --home ~/.gaiad-liveness 
+	sed -i'.bak' 's/minimum-gas-prices = ""/minimum-gas-prices = "0.1stake"/' ~/.gaiad-liveness/config/app.toml
+	gaiad start --home ~/.gaiad-liveness --mode validator --x-crisis-skip-assert-invariants
+
+.PHONY: start-localnet
+
 start-localnet-ci:
 	./build/gaiad init liveness --chain-id liveness --home ~/.gaiad-liveness
 	./build/gaiad config chain-id liveness --home ~/.gaiad-liveness
 	./build/gaiad config keyring-backend test --home ~/.gaiad-liveness
-	./build/gaiad keys add val --home ~/.gaiad-liveness
+	./build/gaiad keys add val --home ~/.gaiad-liveness --keyring-backend test
 	./build/gaiad add-genesis-account val 10000000000000000000000000stake --home ~/.gaiad-liveness --keyring-backend test
 	./build/gaiad gentx val 1000000000stake --home ~/.gaiad-liveness --chain-id liveness
 	./build/gaiad collect-gentxs --home ~/.gaiad-liveness 
